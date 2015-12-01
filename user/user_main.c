@@ -26,7 +26,7 @@ void server_recv_cb(void *arg, char *pdata, unsigned short len) {
     int parsedInt;
     char parsedData[512];
 
-    os_printf("recieved message of length: %d\n", len);
+    //os_printf("recieved message of length: %d\n", len);
 
     if (len == 0) {
         return;
@@ -38,14 +38,14 @@ void server_recv_cb(void *arg, char *pdata, unsigned short len) {
     // process it
     parser_result pres = parser_process(command_parser, &parsedInt, parsedData, 512);
     if (pres == PR_SET_COMMAND) {
-        os_printf("  Message contained 'set' command\n");
+        //os_printf("  Message contained 'set' command\n");
         pres = parser_process(command_parser, &parsedInt, parsedData, 512);
         if (pres == PR_KEY) {
-            os_printf("    for key: %s\n", parsedData);
+            //os_printf("    for key: %s\n", parsedData);
             if (!os_strcmp("on", parsedData)) {
                 pres = parser_process(command_parser, &parsedInt, parsedData, 512);
                 if (pres == PR_VALUE_INT) {
-                    os_printf("      setting 'on' to %d\n", parsedInt);
+                    //os_printf("      setting 'on' to %d\n", parsedInt);
                     if (parsedInt) {
                         // GPIO2 ON
                         gpio_output_set(BIT2, 0, BIT2, 0);
@@ -58,46 +58,46 @@ void server_recv_cb(void *arg, char *pdata, unsigned short len) {
             }
         }
     }
-    else if (pres == PR_SET_COMMAND) {
-        os_printf("  Message contained 'get' command\n");
+    else if (pres == PR_GET_COMMAND) {
+        //os_printf("  Message contained 'get' command\n");
     }
 
-    os_printf("Resetting parser\n");
+    //os_printf("Resetting parser\n");
     parser_reset(command_parser);
 }
 
 void server_sent_cb(void *arg) {
     struct espconn *pConn = (struct espconn *)arg;
-    os_printf("data sent\n");
+    //os_printf("data sent\n");
 }
 
 void client_connect_cb(void *arg) {
     struct espconn *pConn = (struct espconn *)arg;
     cm_add_connection(clients, pConn);
-    os_printf("Client connected\n");
+    //os_printf("Client connected\n");
 }
 
 void client_reconnect_cb(void *arg, sint8 err) {
     struct espconn *pConn = (struct espconn *)arg;
-    os_printf("Error occured: %d\n", err);
+    //os_printf("Error occured: %d\n", err);
 }
 
 void client_disconnect_cb(void *arg) {
     struct espconn *pConn = (struct espconn *)arg;
     bool res = cm_remove_connection(clients, pConn);
-    os_printf("Client disconnected. ");
+    //os_printf("Client disconnected. ");
     if (res) {
-        os_printf("Client removed from list\n");
+        //os_printf("Client removed from list\n");
     }
     else {
-        os_printf("Client could not be removed from list!\n");
+        //os_printf("Client could not be removed from list!\n");
     }
 }
 
 ICACHE_FLASH_ATTR
 void start_server()
 {
-    os_printf("Setting up server...\n");
+    //os_printf("Setting up server...\n");
 
     os_memset(&server_conn, 0, sizeof(struct espconn));
     os_memset(&server_tcp, 0, sizeof(esp_tcp));
@@ -121,14 +121,14 @@ void start_server()
     espconn_tcp_set_max_con_allow(&server_conn, 4);
 
     // done wait for connection
-    os_printf("Server set up, starting...\n");
+    //os_printf("Server set up, starting...\n");
 
     if (espconn_accept(&server_conn) != ESPCONN_OK) {
-        os_printf("Server failed to start. Error!\n");
+        //os_printf("Server failed to start. Error!\n");
         return;
     }
 
-    os_printf("Server started, ready for connections...\n");
+    //os_printf("Server started, ready for connections...\n");
 }
 
 void wifi_callback(System_Event_t *evt)
@@ -137,17 +137,17 @@ void wifi_callback(System_Event_t *evt)
     {
         case EVENT_STAMODE_CONNECTED:
         {
-            os_printf("connect to ssid %s, channel %d\n",
-                        evt->event_info.connected.ssid,
-                        evt->event_info.connected.channel);
+            //os_printf("connect to ssid %s, channel %d\n",
+//                        evt->event_info.connected.ssid,
+//                        evt->event_info.connected.channel);
             break;
         }
 
         case EVENT_STAMODE_DISCONNECTED:
         {
-            os_printf("disconnect from ssid %s, reason %d\n",
-                        evt->event_info.disconnected.ssid,
-                        evt->event_info.disconnected.reason);
+            //os_printf("disconnect from ssid %s, reason %d\n",
+//                        evt->event_info.disconnected.ssid,
+//                        evt->event_info.disconnected.reason);
 
             deep_sleep_set_option(0);
             system_deep_sleep(60 * 1000 * 1000);  // 60 seconds
@@ -156,11 +156,11 @@ void wifi_callback(System_Event_t *evt)
 
         case EVENT_STAMODE_GOT_IP:
         {
-            os_printf("ip:" IPSTR ",mask:" IPSTR ",gw:" IPSTR,
-                        IP2STR(&evt->event_info.got_ip.ip),
-                        IP2STR(&evt->event_info.got_ip.mask),
-                        IP2STR(&evt->event_info.got_ip.gw));
-            os_printf("\n");
+            //os_printf("ip:" IPSTR ",mask:" IPSTR ",gw:" IPSTR,
+ //                       IP2STR(&evt->event_info.got_ip.ip),
+  //                      IP2STR(&evt->event_info.got_ip.mask),
+   //                     IP2STR(&evt->event_info.got_ip.gw));
+            //os_printf("\n");
             start_server();
             break;
         }
@@ -191,15 +191,13 @@ void user_init(void)
     uart_div_modify(0, UART_CLK_FREQ / (115200));
 
     // initialize GPIO
+    gpio_init();
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
     gpio_output_set(0, BIT2, BIT2, 0);
-
 
     // set up wifi options
     wifi_station_set_hostname("outlet");
     wifi_set_opmode_current(STATION_MODE);
-
-    gpio_init();
 
     config.bssid_set = 0;
     os_memcpy( &config.ssid, "haCapDemo", 32 );
@@ -214,7 +212,6 @@ void user_init(void)
     IP4_ADDR(&info.gw, 192, 168, 43, 1);
     IP4_ADDR(&info.netmask, 255, 255, 255, 0);
     wifi_set_ip_info(STATION_IF, &info);
-
 
     wifi_set_event_handler_cb(wifi_callback);
 
