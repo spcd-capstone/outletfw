@@ -1,6 +1,6 @@
 
+**DEPRECATED**
 
-To back up factory firmware:
-
-    esptool.py read_flash 0x000 524288 factoryfw.bin
+The newest version of this firmware can be found as a seperate branch under the
+"commonfw" repo
 
